@@ -22,10 +22,8 @@ public partial class MemoryPackGenerator : ISourceGenerator
             return;
         }
 
-        if (!context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.MemoryPackGenerator_SerializationInfoOutputDirectory", out var logPath))
-        {
-            logPath = null;
-        }
+        // 突貫対応でSerializeInfoを吐き出す場所を直接書いちゃう
+        var logPath = $"{Directory.GetCurrentDirectory()}/MemoryPackLogs";
 
         var compiation = context.Compilation;
         var generateContext = new GeneratorContext(context);
