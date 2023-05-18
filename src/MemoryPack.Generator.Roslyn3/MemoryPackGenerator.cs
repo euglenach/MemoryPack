@@ -1,6 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.IO;
+using System.Text;
+using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace MemoryPack.Generator;
 
@@ -22,8 +29,26 @@ public partial class MemoryPackGenerator : ISourceGenerator
             return;
         }
 
-        // 突貫対応でSerializeInfoを吐き出す場所を直接書いちゃう
-        var logPath = $"{Directory.GetCurrentDirectory()}/MemoryPackLogs";
+        var logPath = string.Empty;
+
+        try
+        {
+            // 突貫対応でSerializeInfoを吐き出す場所を直接書いちゃう
+
+            // 正規表現でフルパスからログを吐き出すパスを計算する
+            const string pattern = @"^(.*[\\\/])?client[\\\/]Assets[\\\/]";
+            // 対象のdllに所属する最初のcsファイルのフルパスを取得
+            var firstCSFullPath = context.Compilation.Assembly.Modules.First().Locations.First().GetMappedLineSpan().Path;
+            var match = Regex.Match(firstCSFullPath, pattern);
+            var path = match.Value;
+            // Assets/は削除
+            path = Regex.Replace(path, @"\\", @"/");
+            logPath = path.Replace(@"Assets/", string.Empty) + "MemoryPackLogs";
+            // File.WriteAllText(@"D:\hogehoge.txt", logPath);
+        } catch(Exception e)
+        {
+            Console.WriteLine(e);
+        }
 
         var compiation = context.Compilation;
         var generateContext = new GeneratorContext(context);
